@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>スマートカレンダー - High Contrast & Direct Memo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
+
+    :root {
+      --bg-color: #f4f4f5;
+      --card-bg: #ffffff;
+      --text-main: #09090b;
+      --text-sub: #71717a;
+      --border-color: #000000;
+      --shadow-sharp: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Zen Kaku Gothic New', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+    }
+    
+    body { 
+      background: var(--bg-color); 
+      color: var(--text-main); 
+      padding: 12px 12px 85px 12px; 
+      max-width: 480px; 
+      margin: 0 auto; 
+      min-height: 100vh;
+    }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    h1 { font-size: 1.15rem; color: var(--text-main); font-weight: 900; letter-spacing: -0.02em; }
+
+    .header-btns { display: flex; gap: 6px; }
+    .dummy-btn, .clear-btn {
+      border: 1.5px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: white;
+      color: var(--text-main);
+    }
+    .clear-btn { background: #000000; color: white; }
+
+    /* サッとメモカード */
+    .quick-memo-card { 
+      background: var(--card-bg); 
+      border-radius: 12px; 
+      padding: 12px; 
+      margin-bottom: 12px; 
+      box-shadow: var(--shadow-sharp);
+      border: 2px solid var(--border-color);
+    }
+    .memo-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .memo-title { font-weight: 900; font-size: 0.85rem; color: var(--text-main); }
+    .memo-body { margin-top: 10px; display: none; }
+    .memo-body.active { display: block; }
+    .memo-input-box { display: flex; gap: 6px; }
+    .memo-input-box input { 
+      flex: 1; 
+      padding: 8px 10px; 
+      border: 1.5px solid var(--border-color); 
+      border-radius: 8px; 
+      font-size: 0.82rem; 
+      outline: none;
+      font-weight: 700;
+      background: #fafafa;
+    }
+    .memo-btn { background: var(--border-color); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; }
+
+    .memo-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+    .memo-item { background: #f4f4f5; padding: 8px 10px; border-radius: 8px; font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; border: 1.5px solid var(--border-color); }
+    .convert-btn { background: #000000; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 800; }
+    .delete-memo-btn { background: white; color: #000000; border: 1.5px solid #000000; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 800; margin-left: 4px; }
+
+    /* ビュー切替 & フィルター */
+    .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 6px; }
+    .view-switch-bar { display: flex; gap: 2px; background: #e4e4e7; padding: 3px; border-radius: 10px; border: 1.5px solid var(--border-color); }
+    .view-btn { 
+      padding: 6px 12px; 
+      border: none; 
+      background: transparent; 
+      color: var(--text-sub);
+      border-radius: 7px; 
+      font-size: 0.78rem; 
+      font-weight: 800; 
+      cursor: pointer; 
+    }
+    .view-btn.active { background: #000000; color: white; }
+
+    .filter-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-btn { padding: 6px 12px; font-size: 0.75rem; border: 1.5px solid var(--border-color); background: white; color: var(--text-main); border-radius: 20px; cursor: pointer; white-space: nowrap; font-weight: 800; }
+    .filter-btn.active { background: #000000; color: white; }
+
+    /* カレンダーカード */
+    .calendar-card { 
+      background: var(--card-bg); 
+      border-radius: 16px; 
+      padding: 14px 10px; 
+      box-shadow: var(--shadow-sharp); 
+      border: 2px solid var(--border-color);
+    }
+    .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-weight: 900; font-size: 1rem; }
+    .cal-header-center { display: flex; align-items: center; gap: 8px; }
+
+    .digital-clock {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: white;
+      background: #000000;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+
+    .vertical-scroll-container {
+      max-height: 440px;
+      overflow-y: auto;
+      padding-right: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sticky-header-label {
+      position: sticky;
+      top: 0;
+      background: #f4f4f5;
+      padding: 6px 8px;
+      font-size: 0.82rem;
+      font-weight: 900;
+      color: var(--text-main);
+      border-radius: 6px;
+      margin: 8px 0 4px 0;
+      z-index: 10;
+      border: 1.5px solid var(--border-color);
+    }
+
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+    .day-name { font-size: 0.78rem; color: var(--text-sub); padding: 4px 0; font-weight: 900; }
+    .day-name.sun { color: #000000; border-bottom: 2px solid #000000; }
+    .day-name.sat { color: #52525b; border-bottom: 2px dashed #52525b; }
+
+    .cell { 
+      background: #ffffff; 
+      height: 60px; 
+      border-radius: 8px; 
+      padding: 4px; 
+      cursor: pointer; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center;
+      justify-content: flex-start; 
+      border: 1px solid #e4e4e7; 
+      position: relative;
+    }
+
+    /* 土・日・祝日の識別テクスチャ */
+    .cell.is-sat { 
+      background-color: #f9fafb;
+      background-image: repeating-linear-gradient(45deg, #e5e7eb 0, #e5e7eb 1px, transparent 0, transparent 50%);
+      background-size: 6px 6px;
+    }
+    .cell.is-sun, .cell.is-holiday { 
+      background-color: #f3f4f6;
+      background-image: repeating-linear-gradient(0deg, #d1d5db 0, #d1d5db 1px, transparent 0, transparent 50%);
+      background-size: 100% 4px;
+      border: 1.5px solid #9ca3af;
+    }
+
+    /* 今日の反転強調 */
+    .cell.is-today { 
+      background: #000000 !important; 
+      border: 2px solid #000000 !important; 
+    }
+    .cell.is-today .day-num {
+      color: #ffffff !important;
+    }
+
+    /* 選択日 */
+    .cell.is-selected { 
+      border: 3px solid #000000 !important; 
+      box-shadow: inset 0 0 0 1px #ffffff;
+    }
+
+    .cell.other-month { opacity: 0.15; background: #f4f4f5 !important; cursor: default; }
+
+    .cell .day-num { font-size: 0.88rem; font-weight: 900; color: var(--text-main); margin-bottom: 2px; }
+    .cell .day-num.sun, .cell .day-num.holiday { color: #000000; text-decoration: underline; }
+    .cell .day-num.sat { color: #3f3f46; }
+
+    /* ★ 超高濃度ソリッドドット ★ */
+    .dots-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 3px;
+      justify-content: center;
+      align-items: center;
+      max-width: 100%;
+      margin-top: 2px;
+    }
+    .event-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1.5px solid #000000;
+      box-shadow: 0 0 0 1px #ffffff;
+    }
+
+    /* ハーフシート modal */
+    .half-sheet-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 150;
+      backdrop-filter: blur(2px);
+    }
+    .half-sheet-overlay.active { display: block; }
+
+    .half-sheet-card {
+      position: fixed;
+      bottom: -100%;
+      left: 0; right: 0;
+      max-width: 480px;
+      margin: 0 auto;
+      background: white;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+      border-top: 3px solid var(--border-color);
+      padding: 18px;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+      z-index: 160;
+      transition: bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      max-height: 75vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .half-sheet-card.active { bottom: 0; }
+
+    .sheet-handle {
+      width: 40px;
+      height: 4px;
+      background: #000000;
+      border-radius: 2px;
+      margin: 0 auto 12px auto;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-weight: 900;
+      font-size: 1rem;
+    }
+
+    .timeline-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 50vh; }
+    .timeline-item { 
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #fafafa;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-color);
+      border-left: 6px solid var(--border-color);
+    }
+    .timeline-item.completed .timeline-title { text-decoration: line-through; opacity: 0.4; }
+    .timeline-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+    .time-badge { background: #000000; color: white; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+    .timeline-body { flex: 1; display: flex; align-items: center; gap: 8px; }
+    .timeline-title { font-size: 0.9rem; font-weight: 800; color: var(--text-main); }
+
+    /* 日別一覧の直接メモ編集入力エリア */
+    .direct-memo-box {
+      display: flex;
+      gap: 6px;
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+    }
+    .direct-memo-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-main);
+      background: transparent;
+    }
+    .direct-memo-save-btn {
+      background: #000000;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .action-btns { display: flex; gap: 4px; }
+    .edit-btn { background: #ffffff; color: #000000; border: 1.5px solid #000000; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+    .del-btn { background: #000000; color: white; border: none; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+
+    /* モーダル */
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(2px); }
+    .modal.active { display: flex; }
+    .modal-content { background: white; padding: 20px; border-radius: 16px; width: 92%; max-width: 400px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--border-color); }
+    .modal-title { font-weight: 900; margin-bottom: 12px; font-size: 1rem; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.8rem; margin-bottom: 6px; font-weight: 800; color: var(--text-main); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.88rem; outline: none; font-weight: 700; background: #fafafa; }
+    .time-range { display: flex; gap: 6px; align-items: center; }
+
+    .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
+    .pill-btn {
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      border: 1.5px solid var(--border-color);
+      background: white;
+      color: var(--text-main);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    .pill-btn.active { background: #000000; color: white; }
+
+    .btn-group { display: flex; gap: 8px; margin-top: 16px; }
+    .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.88rem; }
+    .btn-primary { background: #000000; color: white; }
+    .btn-close { background: white; color: var(--text-main); border: 1.5px solid var(--border-color); }
+
+    /* ボトムナビ */
+    .mobile-bottom-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 62px;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 20px;
+      z-index: 100;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .bottom-nav-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-main);
+      cursor: pointer;
+    }
+
+    .bottom-add-fab {
+      background: #000000;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.6rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📅 スマートカレンダー</h1>
+    <div class="header-btns">
+      <button class="dummy-btn" onclick="populateDummyData()">サンプル</button>
+      <button class="clear-btn" onclick="clearSampleSchedules()">消去</button>
+    </div>
+  </header>
+
+  <!-- サッとメモ -->
+  <div class="quick-memo-card">
+    <div class="memo-header" onclick="toggleMemoAccordion()">
+      <span class="memo-title">💬 忘れる前にサッとメモ</span>
+      <span id="memoToggleIcon" style="font-size: 0.78rem; color: var(--text-main); font-weight:800;">▼ 開く</span>
+    </div>
+    <div class="memo-body" id="memoBody">
+      <div class="memo-input-box">
+        <input type="text" id="quickMemoInput" placeholder="例：明日 17時〜 カフェバイト 持ち物：エプロン">
+        <button class="memo-btn" onclick="addQuickMemo()">保存</button>
+      </div>
+      <div class="memo-list" id="quickMemoList"></div>
+    </div>
+  </div>
+
+  <!-- ビュー切替 & フィルター -->
+  <div class="top-controls">
+    <div class="view-switch-bar">
+      <button class="view-btn" id="viewBtnWeek" onclick="switchView('week')">週</button>
+      <button class="view-btn active" id="viewBtnMonth" onclick="switchView('month')">月</button>
+      <button class="view-btn" id="viewBtnYear" onclick="switchView('year')">年</button>
+    </div>
+
+    <div class="filter-bar" id="filterBar"></div>
+    <button class="filter-btn" onclick="openCatModal()">⚙️</button>
+  </div>
+
+  <!-- カレンダーカード -->
+  <div class="calendar-card">
+    <div class="cal-header">
+      <button onclick="navigateView(-1)" class="filter-btn">◀</button>
+      <div class="cal-header-center">
+        <span id="calTitle">2026年 10月</span>
+        <div class="digital-clock">
+          <span id="digitalClockTime">00:00:00</span>
+        </div>
+      </div>
+      <button onclick="navigateView(1)" class="filter-btn">▶</button>
+    </div>
+    <div id="calendarMainView"></div>
+  </div>
+
+  <!-- 下部ハーフシート（日別スケジュール） -->
+  <div class="half-sheet-overlay" id="sheetOverlay" onclick="closeHalfSheet()"></div>
+  <div class="half-sheet-card" id="halfSheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <span id="selectedDateTitle">📅 日付を選択してください</span>
+      <button onclick="closeHalfSheet()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:var(--text-main); font-weight:900;">✕</button>
+    </div>
+    <div id="dayScheduleList" class="timeline-list"></div>
+    <button class="btn btn-primary" style="margin-top: 12px; width:100%;" onclick="openAddModal()">＋ この日に予定を追加</button>
+  </div>
+
+  <!-- 固定ボトムバー -->
+  <div class="mobile-bottom-bar">
+    <button class="bottom-nav-btn" onclick="jumpToToday()">
+      <span style="font-size:1.1rem;">📍</span>
+      <span>今日</span>
+    </button>
+
+    <button class="bottom-nav-btn" onclick="openPatternManageModal()">
+      <span style="font-size:1.1rem;">⚙️</span>
+      <span>マイパターン</span>
+    </button>
+
+    <button class="bottom-add-fab" onclick="openAddModal()">＋</button>
+  </div>
+
+  <!-- 予定追加・編集モーダル -->
+  <div class="modal" id="addModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalHeaderTitle">予定の追加</div>
+
+      <form id="addForm">
+        <input type="hidden" id="editScheduleId" value="">
+
+        <div class="form-group" style="background:#f4f4f5; padding:10px; border-radius:10px; border:1.5px solid var(--border-color);">
+          <label style="margin-bottom:2px;">⚡ マイパターンから自動入力</label>
+          <select id="myPatternSelect" onchange="selectMyPatternFromDropdown(this.value)">
+            <option value="">選択してください</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>タイトル</label>
+          <input type="text" id="title" placeholder="例：課題提出 / バイト" required>
+        </div>
+
+        <div class="form-group">
+          <label>日付</label>
+          <input type="date" id="date" required>
+        </div>
+
+        <div class="form-group">
+          <label><input type="checkbox" id="isAllDay" onchange="toggleTimeInput()"> ⏰ 終日</label>
+        </div>
+
+        <div class="form-group" id="timeGroup">
+          <label>時間</label>
+          <div class="time-range">
+            <input type="time" id="startTime" value="10:00">
+            <span>〜</span>
+            <input type="time" id="endTime" value="12:00">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>ジャンル</label>
+          <div class="pill-group" id="categoryPillGroup"></div>
+        </div>
+
+        <div class="form-group">
+          <label>重要度</label>
+          <div class="pill-group" id="priorityPillGroup">
+            <button type="button" class="pill-btn" data-val="高" onclick="selectPriorityPill('高')">高</button>
+            <button type="button" class="pill-btn active" data-val="中" onclick="selectPriorityPill('中')">中</button>
+            <button type="button" class="pill-btn" data-val="低" onclick="selectPriorityPill('低')">低</button>
+          </div>
+        </div>
+
+        <!-- 任意メモ機能 -->
+        <div class="form-group">
+          <label>💬 メモ・詳細（任意・後から追加・編集可能）</label>
+          <textarea id="scheduleNote" rows="2" placeholder="例：持ち物、部屋番号、メモなど"></textarea>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" class="btn btn-close" onclick="closeAddModal()">キャンセル</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- マイパターン設定モーダル -->
+  <div class="modal" id="patternManageModal">
+    <div class="modal-content">
+      <div class="modal-title">⚙️ マイパターンの設定・登録</div>
+      
+      <div id="patternList" style="margin-bottom: 12px; display:flex; flex-direction:column; gap:6px;"></div>
+
+      <hr style="margin: 12px 0; border: none; border-top: 1.5px dashed #000000;">
+      <div class="modal-title" style="font-size: 0.88rem;" id="patternFormTitle">＋ 新しいマイパターンを登録</div>
+      <input type="hidden" id="editPatternIndex" value="">
+
+      <div class="form-group">
+        <label>パターン名</label>
+        <input type="text" id="pName" placeholder="例：☕ カフェバイト">
+      </div>
+      <div class="form-group">
+        <label>予定のタイトル</label>
+        <input type="text" id="pTitle" placeholder="例：カフェアルバイト">
+      </div>
+      <div class="form-group">
+        <label>時間</label>
+        <div class="time-range">
+          <input type="time" id="pStart" value="17:00">
+          <span>〜</span>
+          <input type="time" id="pEnd" value="21:00">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>ジャンル</label>
+        <select id="pCat"></select>
+      </div>
+
+      <button class="btn btn-primary" style="width: 100%; margin-top: 8px;" id="savePatternBtn" onclick="saveMyPattern()">マイパターンを保存</button>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-close" onclick="closeModal('patternManageModal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ジャンル編集モーダル -->
+  <div class="modal" id="catModal">
+    <div class="modal-content">
+      <div class="modal-title">⚙️ ジャンルの管理</div>
+      <div id="catList" style="margin-bottom: 10px; display:flex; flex-direction:column; gap:6px;"></div>
+
+      <hr style="margin: 10px 0; border: none; border-top: 1.5px dashed #000000;">
+      <div class="modal-title" style="font-size: 0.88rem;">＋ 新しいジャンル</div>
+      <div class="form-group">
+        <label>ジャンル名</label>
+        <input type="text" id="newCatName" placeholder="例：就活, 推し活">
+      </div>
+      <div class="form-group">
+        <label>テーマカラー</label>
+        <input type="color" id="newCatColor" value="#e03131" style="height: 40px; cursor: pointer; border-radius: 8px; padding: 2px;">
+      </div>
+      <button class="btn btn-primary" style="width: 100%;" onclick="addNewCategory()">追加</button>
+
+      <div class="btn-group">
+        <button type="button" class="btn btn-close" onclick="closeModal('catModal')">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const holidays = { "2026-10-12": "スポーツの日", "2026-11-03": "文化の日", "2026-11-23": "勤労感謝の日" };
+
+    const categoryIcons = {
+      "大学": "🏫", "バイト": "☕", "課題・テスト": "📝", "サークル": "🎉", "プライベート": "🌸"
+    };
+
+    /* ★ 圧倒的最高濃度のソリッドジャンルカラー ★ */
+    const ultraDeepCategories = [
+      { name: "大学", color: "#00875a" },       /* ダークエメラルド */
+      { name: "バイト", color: "#d9480f" },     /* 濃密ディープオレンジ */
+      { name: "課題・テスト", color: "#e03131" }, /* 純真レッド */
+      { name: "サークル", color: "#1971c2" },   /* 濃厚ウルトラマリン */
+      { name: "プライベート", color: "#9c36b5" }  /* ディープパープル */
+    ];
+
+    let categories = JSON.parse(localStorage.getItem('myCategories')) || ultraDeepCategories;
+    let myPatterns = JSON.parse(localStorage.getItem('myPatterns')) || [
+      { name: "☕ カフェバイト", title: "カフェアルバイト", startTime: "17:00", endTime: "21:00", category: "バイト", priority: "中" },
+      { name: "📝 レポート提出", title: "課題レポート作成", startTime: "10:00", endTime: "12:00", category: "課題・テスト", priority: "高" }
+    ];
+
+    const todayDateStr = "2026-10-20"; 
+    let currentView = 'month';
+    let currentDate = new Date(2026, 9, 20);
+    let selectedDateStr = "2026-10-20";
+    let activeFilter = 'all';
+    let convertingMemoIndex = null;
+
+    let selectedCategory = "大学";
+    let selectedPriority = "中";
+
+    let schedules = JSON.parse(localStorage.getItem('studentSchedules')) || [];
+    let quickMemos = JSON.parse(localStorage.getItem('studentQuickMemos')) || [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderCategories();
+      updatePatternDropdown();
+      updateView();
+      renderQuickMemos();
+      startDigitalClock();
+    });
+
+    function jumpToToday() {
+      currentDate = new Date(2026, 9, 20);
+      selectedDateStr = todayDateStr;
+      if (currentView === 'year') switchView('month');
+      updateView();
+      selectDate(selectedDateStr);
+    }
+
+    function startDigitalClock() {
+      const updateClock = () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        document.getElementById('digitalClockTime').innerText = `${hours}:${minutes}:${seconds}`;
+      };
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    function toggleMemoAccordion() {
+      const body = document.getElementById('memoBody');
+      const icon = document.getElementById('memoToggleIcon');
+      body.classList.toggle('active');
+      icon.innerText = body.classList.contains('active') ? "▲ 閉じる" : "▼ 開く";
+    }
+
+    function openHalfSheet() {
+      document.getElementById('sheetOverlay').classList.add('active');
+      document.getElementById('halfSheet').classList.add('active');
+    }
+
+    function closeHalfSheet() {
+      document.getElementById('sheetOverlay').classList.remove('active');
+      document.getElementById('halfSheet').classList.remove('active');
+    }
+
+    /* 月グリッド描画 */
+    function renderSingleMonthGrid(year, month) {
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+
+      let html = `<div class="cal-grid">`;
+
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="cell other-month"></div>`;
+      }
+
+      for (let d = 1; d <= lastDate; d++) {
+        const dateObj = new Date(year, month, d);
+        const dayOfWeek = dateObj.getDay();
+        const dateStr = formatDateStr(dateObj);
+
+        const isToday = dateStr === todayDateStr;
+        const isSelected = dateStr === selectedDateStr;
+        const isHoliday = !!holidays[dateStr];
+        const isSat = dayOfWeek === 6;
+        const isSun = dayOfWeek === 0;
+
+        let numClass = isHoliday ? 'holiday' : (isSun ? 'sun' : (isSat ? 'sat' : ''));
+        const dayEvents = schedules.filter(s => s.date === dateStr && (activeFilter === 'all' || s.category === activeFilter));
+
+        let dotsHtml = '<div class="dots-container">';
+        dayEvents.slice(0, 5).forEach(e => {
+          const cat = categories.find(c => c.name === e.category);
+          const color = cat ? cat.color : '#000000';
+          dotsHtml += `<div class="event-dot" style="background-color:${color};" title="${escapeHtml(e.title)}"></div>`;
+        });
+        dotsHtml += '</div>';
+
+        html += `
+          <div class="cell ${isSat ? 'is-sat' : ''} ${isSun ? 'is-sun' : ''} ${isHoliday ? 'is-holiday' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" data-date="${dateStr}" onclick="selectDate('${dateStr}')">
+            <div class="day-num ${numClass}">${d}</div>
+            ${dotsHtml}
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      return html;
+    }
+
+    function selectDate(dateStr) {
+      selectedDateStr = dateStr;
+      document.getElementById('selectedDateTitle').innerText = `📅 ${dateStr} の予定`;
+      document.getElementById('date').value = dateStr;
+
+      document.querySelectorAll('.cell').forEach(cell => {
+        if (cell.getAttribute('data-date') === selectedDateStr) {
+          cell.classList.add('is-selected');
+        } else {
+          cell.classList.remove('is-selected');
+        }
+      });
+
+      renderDaySchedules();
+      openHalfSheet();
+    }
+
+    /* 日別スケジュール（ハーフシート）の描画＆直接メモ入力機能 */
+    function renderDaySchedules() {
+      const listContainer = document.getElementById('dayScheduleList');
+      const dayEvents = schedules.filter(s => s.date === selectedDateStr && (activeFilter === 'all' || s.category === activeFilter));
+      
+      if (dayEvents.length === 0) {
+        listContainer.innerHTML = '<div style="color: var(--text-sub); text-align: center; font-size: 0.85rem; padding: 20px; font-weight:800;">予定はありません ☕</div>';
+        return;
+      }
+
+      dayEvents.sort((a,b) => (a.startTime || '99:99').localeCompare(b.startTime || '99:99'));
+      listContainer.innerHTML = '';
+
+      dayEvents.forEach(e => {
+        const cat = categories.find(c => c.name === e.category);
+        const color = cat ? cat.color : '#000000';
+        const icon = categoryIcons[e.category] || "📌";
+
+        const div = document.createElement('div');
+        div.className = `timeline-item ${e.completed ? 'completed' : ''}`;
+        div.style.borderLeftColor = color;
+
+        let timeBadgeHtml = `<div class="time-badge">終日</div>`;
+        if (e.startTime) {
+          timeBadgeHtml = `<div class="time-badge">${e.startTime}〜${e.endTime || ''}</div>`;
+        }
+
+        div.innerHTML = `
+          <div class="timeline-row">
+            ${timeBadgeHtml}
+            <div class="timeline-body">
+              <input type="checkbox" ${e.completed ? 'checked' : ''} onchange="toggleCompleteSchedule(${e.id})" style="width:18px; height:18px; cursor:pointer;">
+              <div class="timeline-title">${icon} ${escapeHtml(e.title)}</div>
+            </div>
+            <div class="action-btns">
+              <button class="edit-btn" onclick="openEditModal(${e.id})">編集</button>
+              <button class="del-btn" onclick="deleteSchedule(${e.id})">削除</button>
+            </div>
+          </div>
+          <!-- その場で直接メモ入力・保存できるエリア -->
+          <div class="direct-memo-box">
+            <input type="text" id="directNoteInput-${e.id}" value="${escapeHtml(e.note || '')}" placeholder="💬 メモを入力・追記...">
+            <button class="direct-memo-save-btn" onclick="saveDirectNote(${e.id})">保存</button>
+          </div>
+        `;
+        listContainer.appendChild(div);
+      });
+    }
+
+    /* 日別一覧から直接メモを即時保存する関数 */
+    function saveDirectNote(id) {
+      const input = document.getElementById(`directNoteInput-${id}`);
+      if (!input) return;
+      const newNote = input.value.trim();
+
+      const index = schedules.findIndex(s => s.id === id);
+      if (index !== -1) {
+        schedules[index].note = newNote;
+        localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+        alert('メモを保存しました！');
+        renderDaySchedules();
+      }
+    }
+
+    function startConvertMemo(index) {
+      convertingMemoIndex = index;
+      const memoText = quickMemos[index];
+      
+      let title = memoText;
+      let targetDateStr = selectedDateStr;
+      let startTime = "10:00";
+      let endTime = "12:00";
+      let selectedCat = "大学";
+
+      if (memoText.includes('明日')) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        targetDateStr = formatDateStr(tomorrow);
+        title = title.replace('明日', '');
+      } else {
+        const monthDayMatch = memoText.match(/(\d{1,2})[\/\-](\d{1,2})/);
+        if (monthDayMatch) {
+          const month = String(monthDayMatch[1]).padStart(2, '0');
+          const day = String(monthDayMatch[2]).padStart(2, '0');
+          targetDateStr = `2026-${month}-${day}`;
+          title = title.replace(monthDayMatch[0], '');
+        }
+      }
+
+      const timeMatch = memoText.match(/(\d{1,2})(?:時|:(\d{2}))/);
+      if (timeMatch) {
+        let hour = String(timeMatch[1]).padStart(2, '0');
+        let min = timeMatch[2] ? String(timeMatch[2]).padStart(2, '0') : '00';
+        startTime = `${hour}:${min}`;
+        let endHour = String(Math.min(23, parseInt(hour) + 2)).padStart(2, '0');
+        endTime = `${endHour}:${min}`;
+        title = title.replace(timeMatch[0], '');
+      }
+
+      if (memoText.includes('バイト')) selectedCat = "バイト";
+      else if (memoText.includes('テスト') || memoText.includes('課題') || memoText.includes('レポート')) selectedCat = "課題・テスト";
+      else if (memoText.includes('サークル') || memoText.includes('飲み')) selectedCat = "サークル";
+      else if (memoText.includes('カフェ') || memoText.includes('美容院') || memoText.includes('ライブ')) selectedCat = "プライベート";
+
+      openAddModal();
+
+      document.getElementById('title').value = title.replace(/[〜～\s]+/g, ' ').trim() || memoText;
+      document.getElementById('date').value = targetDateStr;
+      document.getElementById('startTime').value = startTime;
+      document.getElementById('endTime').value = endTime;
+      document.getElementById('scheduleNote').value = memoText;
+      selectCategoryPill(selectedCat);
+    }
+
+    function addQuickMemo() {
+      const input = document.getElementById('quickMemoInput');
+      const text = input.value.trim();
+      if (!text) return;
+      quickMemos.push(text);
+      localStorage.setItem('studentQuickMemos', JSON.stringify(quickMemos));
+      input.value = '';
+      renderQuickMemos();
+    }
+
+    function renderQuickMemos() {
+      const container = document.getElementById('quickMemoList');
+      container.innerHTML = '';
+      if (quickMemos.length === 0) {
+        container.innerHTML = '<div style="font-size:0.78rem; color:var(--text-sub); font-weight:800;">メモはありません ✨</div>';
+        return;
+      }
+
+      quickMemos.forEach((memo, index) => {
+        container.innerHTML += `
+          <div class="memo-item">
+            <span>📌 ${escapeHtml(memo)}</span>
+            <div>
+              <button class="convert-btn" onclick="startConvertMemo(${index})">反映</button>
+              <button class="delete-memo-btn" onclick="deleteMemo(${index})">✕</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function deleteMemo(index) {
+      if (!confirm("このメモを削除しますか？")) return;
+      quickMemos.splice(index, 1);
+      localStorage.setItem('studentQuickMemos', JSON.stringify(quickMemos));
+      renderQuickMemos();
+    }
+
+    function updatePatternDropdown() {
+      const select = document.getElementById('myPatternSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">選択してください</option>';
+      myPatterns.forEach((p, idx) => {
+        select.innerHTML += `<option value="${idx}">${escapeHtml(p.name)}（${escapeHtml(p.title)}）</option>`;
+      });
+
+      const pCatSelect = document.getElementById('pCat');
+      if (pCatSelect) {
+        pCatSelect.innerHTML = '';
+        categories.forEach(c => {
+          pCatSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+        });
+      }
+
+      localStorage.setItem('myPatterns', JSON.stringify(myPatterns));
+    }
+
+    function selectMyPatternFromDropdown(val) {
+      if (val === "") return;
+      const p = myPatterns[parseInt(val)];
+      if (!p) return;
+
+      document.getElementById('title').value = p.title;
+      document.getElementById('startTime').value = p.startTime || "10:00";
+      document.getElementById('endTime').value = p.endTime || "12:00";
+      selectCategoryPill(p.category || "大学");
+      selectPriorityPill(p.priority || "中");
+    }
+
+    function openPatternManageModal() {
+      renderPatternList();
+      resetPatternForm();
+      document.getElementById('patternManageModal').classList.add('active');
+    }
+
+    function renderPatternList() {
+      const container = document.getElementById('patternList');
+      container.innerHTML = '';
+      if (myPatterns.length === 0) {
+        container.innerHTML = '<div style="font-size:0.78rem; color:var(--text-sub); font-weight:800;">登録されたマイパターンはありません。</div>';
+        return;
+      }
+
+      myPatterns.forEach((p, idx) => {
+        container.innerHTML += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; border:1.5px solid var(--border-color); padding:8px 12px; border-radius:8px;">
+            <div style="font-size:0.82rem; font-weight:800;">
+              <strong>${escapeHtml(p.name)}</strong>
+              <div style="font-size:0.72rem; color:var(--text-sub);">${escapeHtml(p.title)} (${p.startTime}〜${p.endTime})</div>
+            </div>
+            <div>
+              <button onclick="editPattern(${idx})" style="background:white; color:#000000; border:1.5px solid #000000; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:800; margin-right:4px;">編集</button>
+              <button onclick="deletePattern(${idx})" style="background:#000000; color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:800;">削除</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function saveMyPattern() {
+      const editIdx = document.getElementById('editPatternIndex').value;
+      const name = document.getElementById('pName').value.trim();
+      const title = document.getElementById('pTitle').value.trim();
+      const startTime = document.getElementById('pStart').value;
+      const endTime = document.getElementById('pEnd').value;
+      const category = document.getElementById('pCat').value;
+
+      if (!name || !title) return alert('パターン名とタイトルを入力してください');
+
+      if (editIdx !== "") {
+        myPatterns[parseInt(editIdx)] = { name, title, startTime, endTime, category };
+      } else {
+        myPatterns.push({ name, title, startTime, endTime, category });
+      }
+
+      resetPatternForm();
+      renderPatternList();
+      updatePatternDropdown();
+    }
+
+    function editPattern(idx) {
+      const p = myPatterns[idx];
+      if (!p) return;
+      document.getElementById('editPatternIndex').value = idx;
+      document.getElementById('patternFormTitle').innerText = "✏️ マイパターンを編集";
+      document.getElementById('pName').value = p.name;
+      document.getElementById('pTitle').value = p.title;
+      document.getElementById('pStart').value = p.startTime;
+      document.getElementById('pEnd').value = p.endTime;
+      document.getElementById('pCat').value = p.category;
+      document.getElementById('savePatternBtn').innerText = "マイパターンを更新保存";
+    }
+
+    function resetPatternForm() {
+      document.getElementById('editPatternIndex').value = "";
+      document.getElementById('patternFormTitle').innerText = "＋ 新しいマイパターンを登録";
+      document.getElementById('pName').value = "";
+      document.getElementById('pTitle').value = "";
+      document.getElementById('savePatternBtn').innerText = "マイパターンを保存";
+    }
+
+    function deletePattern(idx) {
+      if (confirm(`マイパターン「${myPatterns[idx].name}」を削除しますか？`)) {
+        myPatterns.splice(idx, 1);
+        resetPatternForm();
+        renderPatternList();
+        updatePatternDropdown();
+      }
+    }
+
+    function populateDummyData() {
+      const dummyTemplates = [
+        { days: [1], items: [{ title: "プログラミング", time: "09:00-10:30", cat: "大学", p: "中", note: "PCと教科書持参" }, { title: "カフェバイト", time: "11:00-15:00", cat: "バイト", p: "低", note: "シフト交替確認" }] },
+        { days: [2], items: [{ title: "Webデザイン", time: "10:40-12:10", cat: "大学", p: "中", note: "" }, { title: "レポート締切", time: "", cat: "課題・テスト", p: "高", note: "2,000字提出" }] },
+        { days: [3], items: [{ title: "データベース", time: "13:00-14:30", cat: "大学", p: "中", note: "" }, { title: "ランチ", time: "12:00-13:00", cat: "プライベート", p: "低", note: "駅前カフェ" }] },
+        { days: [4], items: [{ title: "就活セミナー", time: "15:00-16:30", cat: "大学", p: "高", note: "スーツ着用" }, { title: "居酒屋バイト", time: "17:30-22:00", cat: "バイト", p: "中", note: "" }] },
+        { days: [5], items: [{ title: "ゼミ発表", time: "10:40-12:10", cat: "大学", p: "高", note: "レジュメ印刷" }, { title: "新歓飲み会", time: "18:30-21:00", cat: "サークル", p: "低", note: "会費3000円" }] }
+      ];
+
+      schedules = schedules.filter(s => !s.isSample);
+      let idCounter = Date.now();
+
+      for (let monthOffset = -2; monthOffset <= 4; monthOffset++) {
+        for (let day = 1; day <= 28; day++) {
+          const dateObj = new Date(2026, 9 + monthOffset, day);
+          const dayOfWeek = dateObj.getDay();
+          const dateStr = formatDateStr(dateObj);
+
+          const template = dummyTemplates.find(t => t.days.includes(dayOfWeek));
+          if (template) {
+            template.items.forEach(item => {
+              const times = item.time ? item.time.split("-") : ["", ""];
+              schedules.push({
+                id: idCounter++, title: item.title, date: dateStr, startTime: times[0] || "", endTime: times[1] || "", category: item.cat, priority: item.p, note: item.note || "", completed: false, isSample: true
+              });
+            });
+          }
+        }
+      }
+
+      localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+      updateView();
+    }
+
+    function clearSampleSchedules() {
+      if (!confirm("サンプル予定を削除しますか？")) return;
+      schedules = schedules.filter(s => !s.isSample);
+      localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+      updateView();
+    }
+
+    function switchView(viewMode) {
+      currentView = viewMode;
+      document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`viewBtn${viewMode.charAt(0).toUpperCase() + viewMode.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      updateView();
+    }
+
+    function navigateView(step) {
+      if (currentView === 'month') {
+        currentDate.setMonth(currentDate.getMonth() + step);
+      } else if (currentView === 'week') {
+        currentDate.setDate(currentDate.getDate() + (step * 7));
+      } else if (currentView === 'year') {
+        currentDate.setFullYear(currentDate.getFullYear() + step);
+      }
+      updateView();
+    }
+
+    function updateView() {
+      const main = document.getElementById('calendarMainView');
+      const title = document.getElementById('calTitle');
+
+      if (currentView === 'month') {
+        title.innerText = `${currentDate.getFullYear()}年 ${currentDate.getMonth() + 1}月`;
+        renderInfiniteVerticalMonthView(main);
+      } else if (currentView === 'week') {
+        renderInfiniteVerticalWeekView(main);
+      } else if (currentView === 'year') {
+        title.innerText = `${currentDate.getFullYear()}年`;
+        renderYearView(main);
+      }
+    }
+
+    function renderInfiniteVerticalMonthView(container) {
+      const baseYear = currentDate.getFullYear();
+      const baseMonth = currentDate.getMonth();
+
+      let html = `
+        <div class="cal-grid" style="margin-bottom:4px;">
+          <div class="day-name sun">日</div><div class="day-name">月</div><div class="day-name">火</div>
+          <div class="day-name">水</div><div class="day-name">木</div><div class="day-name">金</div><div class="day-name sat">土</div>
+        </div>
+        <div class="vertical-scroll-container" id="vertContainer">
+      `;
+
+      for (let mOffset = -3; mOffset <= 3; mOffset++) {
+        const targetDate = new Date(baseYear, baseMonth + mOffset, 1);
+        const y = targetDate.getFullYear();
+        const m = targetDate.getMonth();
+
+        html += `<div class="month-block" id="month-block-${y}-${m}">`;
+        html += `<div class="sticky-header-label">📅 ${y}年 ${m + 1}月</div>`;
+        html += renderSingleMonthGrid(y, m);
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+      container.innerHTML = html;
+
+      const vertContainer = document.getElementById('vertContainer');
+      const targetBlock = document.getElementById(`month-block-${baseYear}-${baseMonth}`);
+      if (targetBlock && vertContainer) {
+        vertContainer.scrollTop = targetBlock.offsetTop;
+      }
+    }
+
+    function renderInfiniteVerticalWeekView(container) {
+      const baseStartOfWeek = getStartOfWeek(new Date(currentDate));
+      let html = `<div class="vertical-scroll-container" id="vertContainerWeek">`;
+
+      for (let wOffset = -2; wOffset <= 4; wOffset++) {
+        const startW = new Date(baseStartOfWeek);
+        startW.setDate(baseStartOfWeek.getDate() + (wOffset * 7));
+
+        html += `<div>`;
+        html += `<div class="sticky-header-label">🗓 ${startW.getMonth()+1}/${startW.getDate()} 〜</div>`;
+        html += renderSingleWeekGrid(startW);
+        html += `</div>`;
+      }
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function renderSingleWeekGrid(startOfWeek) {
+      let html = `<div class="cal-grid">`;
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek);
+        d.setDate(startOfWeek.getDate() + i);
+        const dateStr = formatDateStr(d);
+        const dayOfWeek = d.getDay();
+        const isHoliday = !!holidays[dateStr];
+        const isToday = dateStr === todayDateStr;
+        const isSelected = dateStr === selectedDateStr;
+
+        const dayEvents = schedules.filter(s => s.date === dateStr && (activeFilter === 'all' || s.category === activeFilter));
+
+        let dotsHtml = '<div class="dots-container">';
+        dayEvents.slice(0, 5).forEach(e => {
+          const cat = categories.find(c => c.name === e.category);
+          const color = cat ? cat.color : '#000000';
+          dotsHtml += `<div class="event-dot" style="background-color:${color};"></div>`;
+        });
+        dotsHtml += '</div>';
+
+        html += `
+          <div class="cell ${dayOfWeek === 6 ? 'is-sat' : ''} ${dayOfWeek === 0 ? 'is-sun' : ''} ${isHoliday ? 'is-holiday' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" style="height:100px;" onclick="selectDate('${dateStr}')">
+            <div style="font-size:0.68rem; color:var(--text-sub); font-weight:800;">${['日','月','火','水','木','金','土'][dayOfWeek]}</div>
+            <div class="day-num">${d.getDate()}</div>
+            ${dotsHtml}
+          </div>
+        `;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function renderYearView(container) {
+      let html = `<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">`;
+      for (let m = 0; m < 12; m++) {
+        html += `
+          <div style="background: white; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 12px 6px; text-align: center; font-size: 0.88rem; cursor: pointer; font-weight: 800;" onclick="jumpToMonth(${m})">
+            ${m + 1}月
+          </div>
+        `;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function jumpToMonth(m) {
+      currentDate.setMonth(m);
+      switchView('month');
+    }
+
+    function closeAddModal() {
+      convertingMemoIndex = null;
+      closeModal('addModal');
+    }
+
+    function openEditModal(id) {
+      const item = schedules.find(s => s.id === id);
+      if (!item) return;
+
+      document.getElementById('editScheduleId').value = item.id;
+      document.getElementById('modalHeaderTitle').innerText = "✏️ 予定の編集";
+      document.getElementById('title').value = item.title;
+      document.getElementById('date').value = item.date;
+      document.getElementById('scheduleNote').value = item.note || '';
+      
+      const isAllDay = !item.startTime;
+      document.getElementById('isAllDay').checked = isAllDay;
+      toggleTimeInput();
+      if (!isAllDay) {
+        document.getElementById('startTime').value = item.startTime;
+        document.getElementById('endTime').value = item.endTime;
+      }
+
+      selectCategoryPill(item.category);
+      selectPriorityPill(item.priority);
+
+      openAddModal();
+    }
+
+    function deleteSchedule(id) {
+      if (!confirm("この予定を削除しますか？")) return;
+      schedules = schedules.filter(s => s.id !== id);
+      localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+      updateView();
+      renderDaySchedules();
+    }
+
+    function toggleCompleteSchedule(id) {
+      const index = schedules.findIndex(s => s.id === id);
+      if (index !== -1) {
+        schedules[index].completed = !schedules[index].completed;
+        localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+        renderDaySchedules();
+      }
+    }
+
+    function renderCategories() {
+      const filterBar = document.getElementById('filterBar');
+      filterBar.innerHTML = `<button class="filter-btn ${activeFilter==='all'?'active':''}" onclick="setFilter('all')">全表示</button>`;
+      categories.forEach(c => {
+        filterBar.innerHTML += `<button class="filter-btn ${activeFilter===c.name?'active':''}" onclick="setFilter('${c.name}')"><span style="color:${c.color}">●</span> ${c.name}</button>`;
+      });
+
+      const catPillGroup = document.getElementById('categoryPillGroup');
+      catPillGroup.innerHTML = '';
+      categories.forEach(c => {
+        catPillGroup.innerHTML += `
+          <button type="button" class="pill-btn ${selectedCategory === c.name ? 'active' : ''}" onclick="selectCategoryPill('${c.name}')">
+            <span style="color:${c.color}">●</span> ${c.name}
+          </button>
+        `;
+      });
+
+      const catList = document.getElementById('catList');
+      catList.innerHTML = '';
+      categories.forEach((c, index) => {
+        catList.innerHTML += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; border:1.5px solid var(--border-color); padding:8px 12px; border-radius:8px;">
+            <div style="font-size:0.88rem; font-weight:800;"><span style="color:${c.color}; font-size:1.1rem;">●</span> <strong>${c.name}</strong></div>
+            <button onclick="deleteCategory(${index})" style="background:#000000; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:800;">削除</button>
+          </div>
+        `;
+      });
+
+      localStorage.setItem('myCategories', JSON.stringify(categories));
+    }
+
+    function selectCategoryPill(name) {
+      selectedCategory = name;
+      renderCategories();
+    }
+
+    function selectPriorityPill(val) {
+      selectedPriority = val;
+      document.querySelectorAll('#priorityPillGroup .pill-btn').forEach(btn => {
+        if (btn.getAttribute('data-val') === val) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    function addNewCategory() {
+      const name = document.getElementById('newCatName').value.trim();
+      const color = document.getElementById('newCatColor').value;
+      if (!name) return alert('ジャンル名を入力してください');
+
+      categories.push({ name, color });
+      document.getElementById('newCatName').value = '';
+      renderCategories();
+      updateView();
+      renderDaySchedules();
+    }
+
+    function deleteCategory(index) {
+      if (confirm(`ジャンル「${categories[index].name}」を削除しますか？`)) {
+        categories.splice(index, 1);
+        renderCategories();
+        updateView();
+        renderDaySchedules();
+      }
+    }
+
+    function setFilter(catName) {
+      activeFilter = catName;
+      renderCategories();
+      updateView();
+      renderDaySchedules();
+    }
+
+    function toggleTimeInput() {
+      const isAllDay = document.getElementById('isAllDay').checked;
+      document.getElementById('timeGroup').style.display = isAllDay ? 'none' : 'block';
+    }
+
+    function openAddModal() {
+      if (!document.getElementById('editScheduleId').value) {
+        document.getElementById('modalHeaderTitle').innerText = "予定の追加";
+        document.getElementById('myPatternSelect').value = "";
+      }
+      document.getElementById('addModal').classList.add('active');
+    }
+    function openCatModal() { document.getElementById('catModal').classList.add('active'); }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+      if (id === 'addModal') {
+        document.getElementById('addForm').reset();
+        document.getElementById('editScheduleId').value = '';
+        document.getElementById('scheduleNote').value = '';
+        document.getElementById('isAllDay').checked = false;
+        toggleTimeInput();
+      }
+    }
+
+    document.getElementById('addForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const editId = document.getElementById('editScheduleId').value;
+      const baseDate = new Date(document.getElementById('date').value);
+      const title = document.getElementById('title').value;
+      const isAllDay = document.getElementById('isAllDay').checked;
+      const startTime = isAllDay ? '' : document.getElementById('startTime').value;
+      const endTime = isAllDay ? '' : document.getElementById('endTime').value;
+      const category = selectedCategory;
+      const priority = selectedPriority;
+      const note = document.getElementById('scheduleNote').value.trim();
+
+      if (editId) {
+        const index = schedules.findIndex(s => s.id == editId);
+        if (index !== -1) {
+          schedules[index] = {
+            id: Number(editId), title, date: formatDateStr(baseDate), startTime, endTime, category, priority, note, completed: schedules[index].completed || false
+          };
+        }
+      } else {
+        schedules.push({
+          id: Date.now(), title, date: formatDateStr(baseDate), startTime, endTime, category, priority, note, completed: false
+        });
+      }
+
+      if (convertingMemoIndex !== null) {
+        quickMemos.splice(convertingMemoIndex, 1);
+        localStorage.setItem('studentQuickMemos', JSON.stringify(quickMemos));
+        renderQuickMemos();
+        convertingMemoIndex = null;
+      }
+
+      localStorage.setItem('studentSchedules', JSON.stringify(schedules));
+      closeModal('addModal');
+      updateView();
+      renderDaySchedules();
+    });
+
+    function formatDateStr(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function getStartOfWeek(d) {
+      const day = d.getDay();
+      const diff = d.getDate() - day;
+      return new Date(d.setDate(diff));
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+  </script>
+</body>
+</html>
