@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>スマートカレンダー - High Contrast & Direct Memo</title>
+  <title>スマートカレンダー - Complete Ultimate Edition</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
 
@@ -27,25 +27,26 @@
     body { 
       background: var(--bg-color); 
       color: var(--text-main); 
-      padding: 12px 12px 85px 12px; 
+      padding: 12px 12px 90px 12px; 
       max-width: 480px; 
       margin: 0 auto; 
       min-height: 100vh;
     }
 
     header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    h1 { font-size: 1.15rem; color: var(--text-main); font-weight: 900; letter-spacing: -0.02em; }
+    h1 { font-size: 1.2rem; color: var(--text-main); font-weight: 900; letter-spacing: -0.02em; }
 
     .header-btns { display: flex; gap: 6px; }
     .dummy-btn, .clear-btn {
       border: 1.5px solid var(--border-color);
-      padding: 6px 12px;
+      padding: 8px 12px;
       border-radius: 8px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
       background: white;
       color: var(--text-main);
+      min-height: 38px;
     }
     .clear-btn { background: #000000; color: white; }
 
@@ -58,46 +59,65 @@
       box-shadow: var(--shadow-sharp);
       border: 2px solid var(--border-color);
     }
-    .memo-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .memo-title { font-weight: 900; font-size: 0.85rem; color: var(--text-main); }
+    .memo-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 2px 0; }
+    .memo-title { font-weight: 900; font-size: 0.88rem; color: var(--text-main); }
     .memo-body { margin-top: 10px; display: none; }
     .memo-body.active { display: block; }
     .memo-input-box { display: flex; gap: 6px; }
     .memo-input-box input { 
       flex: 1; 
-      padding: 8px 10px; 
+      padding: 10px 12px; 
       border: 1.5px solid var(--border-color); 
       border-radius: 8px; 
-      font-size: 0.82rem; 
+      font-size: 0.85rem; 
       outline: none;
       font-weight: 700;
       background: #fafafa;
+      min-height: 42px;
     }
-    .memo-btn { background: var(--border-color); color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; }
+    .memo-btn { background: var(--border-color); color: white; border: none; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; cursor: pointer; min-height: 42px; }
 
     .memo-list { margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
-    .memo-item { background: #f4f4f5; padding: 8px 10px; border-radius: 8px; font-size: 0.78rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; border: 1.5px solid var(--border-color); }
-    .convert-btn { background: #000000; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 800; }
-    .delete-memo-btn { background: white; color: #000000; border: 1.5px solid #000000; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 800; margin-left: 4px; }
+    .memo-item { background: #f4f4f5; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; font-weight: 700; border: 1.5px solid var(--border-color); }
+    .convert-btn { background: #000000; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 800; min-height: 32px; }
+    .delete-memo-btn { background: white; color: #000000; border: 1.5px solid #000000; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 800; margin-left: 4px; min-height: 32px; }
+
+    /* 🔍 【改善機能②】キーワード検索バー */
+    .search-box-container {
+      margin-bottom: 12px;
+      display: flex;
+      gap: 6px;
+    }
+    .search-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 2px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      outline: none;
+      background: #ffffff;
+    }
 
     /* ビュー切替 & フィルター */
     .top-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 6px; }
     .view-switch-bar { display: flex; gap: 2px; background: #e4e4e7; padding: 3px; border-radius: 10px; border: 1.5px solid var(--border-color); }
     .view-btn { 
-      padding: 6px 12px; 
+      padding: 8px 14px; 
       border: none; 
       background: transparent; 
       color: var(--text-sub);
       border-radius: 7px; 
-      font-size: 0.78rem; 
+      font-size: 0.8rem; 
       font-weight: 800; 
       cursor: pointer; 
+      min-height: 36px;
     }
     .view-btn.active { background: #000000; color: white; }
 
     .filter-bar { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
     .filter-bar::-webkit-scrollbar { display: none; }
-    .filter-btn { padding: 6px 12px; font-size: 0.75rem; border: 1.5px solid var(--border-color); background: white; color: var(--text-main); border-radius: 20px; cursor: pointer; white-space: nowrap; font-weight: 800; }
+    .filter-btn { padding: 8px 14px; font-size: 0.78rem; border: 1.5px solid var(--border-color); background: white; color: var(--text-main); border-radius: 20px; cursor: pointer; white-space: nowrap; font-weight: 800; min-height: 36px; }
     .filter-btn.active { background: #000000; color: white; }
 
     /* カレンダーカード */
@@ -112,11 +132,11 @@
     .cal-header-center { display: flex; align-items: center; gap: 8px; }
 
     .digital-clock {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 800;
       color: white;
       background: #000000;
-      padding: 4px 8px;
+      padding: 5px 10px;
       border-radius: 6px;
     }
 
@@ -131,7 +151,7 @@
       top: 0;
       background: #f4f4f5;
       padding: 6px 8px;
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       font-weight: 900;
       color: var(--text-main);
       border-radius: 6px;
@@ -141,13 +161,13 @@
     }
 
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
-    .day-name { font-size: 0.78rem; color: var(--text-sub); padding: 4px 0; font-weight: 900; }
+    .day-name { font-size: 0.8rem; color: var(--text-sub); padding: 6px 0; font-weight: 900; }
     .day-name.sun { color: #000000; border-bottom: 2px solid #000000; }
     .day-name.sat { color: #52525b; border-bottom: 2px dashed #52525b; }
 
     .cell { 
       background: #ffffff; 
-      height: 60px; 
+      height: 64px; 
       border-radius: 8px; 
       padding: 4px; 
       cursor: pointer; 
@@ -172,7 +192,6 @@
       border: 1.5px solid #9ca3af;
     }
 
-    /* 今日の反転強調 */
     .cell.is-today { 
       background: #000000 !important; 
       border: 2px solid #000000 !important; 
@@ -181,7 +200,6 @@
       color: #ffffff !important;
     }
 
-    /* 選択日 */
     .cell.is-selected { 
       border: 3px solid #000000 !important; 
       box-shadow: inset 0 0 0 1px #ffffff;
@@ -189,11 +207,11 @@
 
     .cell.other-month { opacity: 0.15; background: #f4f4f5 !important; cursor: default; }
 
-    .cell .day-num { font-size: 0.88rem; font-weight: 900; color: var(--text-main); margin-bottom: 2px; }
+    .cell .day-num { font-size: 0.9rem; font-weight: 900; color: var(--text-main); margin-bottom: 2px; }
     .cell .day-num.sun, .cell .day-num.holiday { color: #000000; text-decoration: underline; }
     .cell .day-num.sat { color: #3f3f46; }
 
-    /* ★ 超高濃度ソリッドドット ★ */
+    /* 超高濃度ソリッドドット */
     .dots-container {
       display: flex;
       flex-wrap: wrap;
@@ -237,7 +255,7 @@
       box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
       z-index: 160;
       transition: bottom 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-      max-height: 75vh;
+      max-height: 80vh;
       display: flex;
       flex-direction: column;
     }
@@ -259,7 +277,9 @@
       font-size: 1rem;
     }
 
-    .timeline-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 50vh; }
+    .timeline-list { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 55vh; }
+    
+    /* ⚡ 【改善機能③】重要度「高」の予定の強力ハイライト表示 */
     .timeline-item { 
       display: flex;
       flex-direction: column;
@@ -270,18 +290,34 @@
       border: 1.5px solid var(--border-color);
       border-left: 6px solid var(--border-color);
     }
+    .timeline-item.priority-high {
+      background: #fff5f5;
+      border: 2px solid #e03131;
+      border-left: 8px solid #e03131;
+      box-shadow: 0 2px 8px rgba(224, 49, 49, 0.15);
+    }
+    .priority-badge {
+      background: #e03131;
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 900;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
     .timeline-item.completed .timeline-title { text-decoration: line-through; opacity: 0.4; }
     .timeline-row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
-    .time-badge { background: #000000; color: white; font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
+    .time-badge { background: #000000; color: white; font-size: 0.75rem; font-weight: 800; padding: 4px 8px; border-radius: 6px; white-space: nowrap; }
     .timeline-body { flex: 1; display: flex; align-items: center; gap: 8px; }
-    .timeline-title { font-size: 0.9rem; font-weight: 800; color: var(--text-main); }
+    .timeline-title { font-size: 0.92rem; font-weight: 800; color: var(--text-main); }
 
-    /* 日別一覧の直接メモ編集入力エリア */
+    /* 【改善機能④】スマホでの誤タップ防止・入力エリア拡大 */
     .direct-memo-box {
       display: flex;
       gap: 6px;
       background: #ffffff;
-      padding: 6px;
+      padding: 6px 10px;
       border-radius: 8px;
       border: 1.5px solid var(--border-color);
     }
@@ -289,25 +325,27 @@
       flex: 1;
       border: none;
       outline: none;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text-main);
       background: transparent;
+      min-height: 36px;
     }
     .direct-memo-save-btn {
       background: #000000;
       color: white;
       border: none;
-      padding: 4px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 800;
       cursor: pointer;
+      min-height: 36px;
     }
 
     .action-btns { display: flex; gap: 4px; }
-    .edit-btn { background: #ffffff; color: #000000; border: 1.5px solid #000000; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
-    .del-btn { background: #000000; color: white; border: none; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; }
+    .edit-btn { background: #ffffff; color: #000000; border: 1.5px solid #000000; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; min-height: 36px; }
+    .del-btn { background: #000000; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; min-height: 36px; }
 
     /* モーダル */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); justify-content: center; align-items: center; z-index: 200; backdrop-filter: blur(2px); }
@@ -315,25 +353,26 @@
     .modal-content { background: white; padding: 20px; border-radius: 16px; width: 92%; max-width: 400px; max-height: 85vh; overflow-y: auto; border: 2px solid var(--border-color); }
     .modal-title { font-weight: 900; margin-bottom: 12px; font-size: 1rem; }
     .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.8rem; margin-bottom: 6px; font-weight: 800; color: var(--text-main); }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.88rem; outline: none; font-weight: 700; background: #fafafa; }
+    .form-group label { display: block; font-size: 0.82rem; margin-bottom: 6px; font-weight: 800; color: var(--text-main); }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1.5px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; outline: none; font-weight: 700; background: #fafafa; min-height: 44px; }
     .time-range { display: flex; gap: 6px; align-items: center; }
 
     .pill-group { display: flex; gap: 6px; flex-wrap: wrap; }
     .pill-btn {
-      padding: 8px 12px;
-      font-size: 0.78rem;
+      padding: 10px 14px;
+      font-size: 0.8rem;
       font-weight: 800;
       border: 1.5px solid var(--border-color);
       background: white;
       color: var(--text-main);
       border-radius: 10px;
       cursor: pointer;
+      min-height: 40px;
     }
     .pill-btn.active { background: #000000; color: white; }
 
     .btn-group { display: flex; gap: 8px; margin-top: 16px; }
-    .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.88rem; }
+    .btn { flex: 1; padding: 12px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.9rem; min-height: 46px; }
     .btn-primary { background: #000000; color: white; }
     .btn-close { background: white; color: var(--text-main); border: 1.5px solid var(--border-color); }
 
@@ -341,7 +380,7 @@
     .mobile-bottom-bar {
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      height: 62px;
+      height: 68px;
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(10px);
       border-top: 2px solid var(--border-color);
@@ -361,7 +400,7 @@
       flex-direction: column;
       align-items: center;
       gap: 2px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 800;
       color: var(--text-main);
       cursor: pointer;
@@ -370,13 +409,13 @@
     .bottom-add-fab {
       background: #000000;
       color: white;
-      width: 48px;
-      height: 48px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 1.6rem;
+      font-size: 1.8rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       border: none;
       cursor: pointer;
@@ -397,15 +436,20 @@
   <div class="quick-memo-card">
     <div class="memo-header" onclick="toggleMemoAccordion()">
       <span class="memo-title">💬 忘れる前にサッとメモ</span>
-      <span id="memoToggleIcon" style="font-size: 0.78rem; color: var(--text-main); font-weight:800;">▼ 開く</span>
+      <span id="memoToggleIcon" style="font-size: 0.8rem; color: var(--text-main); font-weight:800;">▼ 開く</span>
     </div>
     <div class="memo-body" id="memoBody">
       <div class="memo-input-box">
-        <input type="text" id="quickMemoInput" placeholder="例：明日 17時〜 カフェバイト 持ち物：エプロン">
+        <input type="text" id="quickMemoInput" placeholder="例：来週 10/30 17時〜 カフェバイト 課題提出">
         <button class="memo-btn" onclick="addQuickMemo()">保存</button>
       </div>
       <div class="memo-list" id="quickMemoList"></div>
     </div>
+  </div>
+
+  <!-- 🔍 【改善機能②】検索バー -->
+  <div class="search-box-container">
+    <input type="text" class="search-input" id="searchInput" placeholder="🔍 予定・メモから検索..." oninput="handleSearch(this.value)">
   </div>
 
   <!-- ビュー切替 & フィルター -->
@@ -441,7 +485,7 @@
     <div class="sheet-handle"></div>
     <div class="sheet-header">
       <span id="selectedDateTitle">📅 日付を選択してください</span>
-      <button onclick="closeHalfSheet()" style="border:none; background:none; font-size:1.2rem; cursor:pointer; color:var(--text-main); font-weight:900;">✕</button>
+      <button onclick="closeHalfSheet()" style="border:none; background:none; font-size:1.3rem; cursor:pointer; color:var(--text-main); font-weight:900;">✕</button>
     </div>
     <div id="dayScheduleList" class="timeline-list"></div>
     <button class="btn btn-primary" style="margin-top: 12px; width:100%;" onclick="openAddModal()">＋ この日に予定を追加</button>
@@ -450,12 +494,12 @@
   <!-- 固定ボトムバー -->
   <div class="mobile-bottom-bar">
     <button class="bottom-nav-btn" onclick="jumpToToday()">
-      <span style="font-size:1.1rem;">📍</span>
+      <span style="font-size:1.2rem;">📍</span>
       <span>今日</span>
     </button>
 
     <button class="bottom-nav-btn" onclick="openPatternManageModal()">
-      <span style="font-size:1.1rem;">⚙️</span>
+      <span style="font-size:1.2rem;">⚙️</span>
       <span>マイパターン</span>
     </button>
 
@@ -514,7 +558,6 @@
           </div>
         </div>
 
-        <!-- 任意メモ機能 -->
         <div class="form-group">
           <label>💬 メモ・詳細（任意・後から追加・編集可能）</label>
           <textarea id="scheduleNote" rows="2" placeholder="例：持ち物、部屋番号、メモなど"></textarea>
@@ -582,7 +625,7 @@
       </div>
       <div class="form-group">
         <label>テーマカラー</label>
-        <input type="color" id="newCatColor" value="#e03131" style="height: 40px; cursor: pointer; border-radius: 8px; padding: 2px;">
+        <input type="color" id="newCatColor" value="#e03131" style="height: 44px; cursor: pointer; border-radius: 8px; padding: 2px;">
       </div>
       <button class="btn btn-primary" style="width: 100%;" onclick="addNewCategory()">追加</button>
 
@@ -599,13 +642,12 @@
       "大学": "🏫", "バイト": "☕", "課題・テスト": "📝", "サークル": "🎉", "プライベート": "🌸"
     };
 
-    /* ★ 圧倒的最高濃度のソリッドジャンルカラー ★ */
     const ultraDeepCategories = [
-      { name: "大学", color: "#00875a" },       /* ダークエメラルド */
-      { name: "バイト", color: "#d9480f" },     /* 濃密ディープオレンジ */
-      { name: "課題・テスト", color: "#e03131" }, /* 純真レッド */
-      { name: "サークル", color: "#1971c2" },   /* 濃厚ウルトラマリン */
-      { name: "プライベート", color: "#9c36b5" }  /* ディープパープル */
+      { name: "大学", color: "#00875a" },
+      { name: "バイト", color: "#d9480f" },
+      { name: "課題・テスト", color: "#e03131" },
+      { name: "サークル", color: "#1971c2" },
+      { name: "プライベート", color: "#9c36b5" }
     ];
 
     let categories = JSON.parse(localStorage.getItem('myCategories')) || ultraDeepCategories;
@@ -619,6 +661,7 @@
     let currentDate = new Date(2026, 9, 20);
     let selectedDateStr = "2026-10-20";
     let activeFilter = 'all';
+    let searchQuery = '';
     let convertingMemoIndex = null;
 
     let selectedCategory = "大学";
@@ -672,6 +715,28 @@
       document.getElementById('halfSheet').classList.remove('active');
     }
 
+    /* 🔍 【改善機能②】検索機能ロジック */
+    function handleSearch(val) {
+      searchQuery = val.trim().toLowerCase();
+      updateView();
+      if (selectedDateStr) renderDaySchedules();
+    }
+
+    /* フィルタ＆検索に合致する予定を取得 */
+    function getFilteredSchedules(dateStr) {
+      return schedules.filter(s => {
+        if (dateStr && s.date !== dateStr) return false;
+        if (activeFilter !== 'all' && s.category !== activeFilter) return false;
+        if (searchQuery) {
+          const titleMatch = s.title.toLowerCase().includes(searchQuery);
+          const noteMatch = (s.note || '').toLowerCase().includes(searchQuery);
+          const catMatch = s.category.toLowerCase().includes(searchQuery);
+          if (!titleMatch && !noteMatch && !catMatch) return false;
+        }
+        return true;
+      });
+    }
+
     /* 月グリッド描画 */
     function renderSingleMonthGrid(year, month) {
       const firstDay = new Date(year, month, 1).getDay();
@@ -695,7 +760,7 @@
         const isSun = dayOfWeek === 0;
 
         let numClass = isHoliday ? 'holiday' : (isSun ? 'sun' : (isSat ? 'sat' : ''));
-        const dayEvents = schedules.filter(s => s.date === dateStr && (activeFilter === 'all' || s.category === activeFilter));
+        const dayEvents = getFilteredSchedules(dateStr);
 
         let dotsHtml = '<div class="dots-container">';
         dayEvents.slice(0, 5).forEach(e => {
@@ -734,46 +799,54 @@
       openHalfSheet();
     }
 
-    /* 日別スケジュール（ハーフシート）の描画＆直接メモ入力機能 */
+    /* ⚡ 【改善機能③】時間順自動ソート ＆ 重要度「高」ハイライト描画 */
     function renderDaySchedules() {
       const listContainer = document.getElementById('dayScheduleList');
-      const dayEvents = schedules.filter(s => s.date === selectedDateStr && (activeFilter === 'all' || s.category === activeFilter));
+      const dayEvents = getFilteredSchedules(selectedDateStr);
       
       if (dayEvents.length === 0) {
-        listContainer.innerHTML = '<div style="color: var(--text-sub); text-align: center; font-size: 0.85rem; padding: 20px; font-weight:800;">予定はありません ☕</div>';
+        listContainer.innerHTML = '<div style="color: var(--text-sub); text-align: center; font-size: 0.85rem; padding: 20px; font-weight:800;">該当する予定はありません ☕</div>';
         return;
       }
 
-      dayEvents.sort((a,b) => (a.startTime || '99:99').localeCompare(b.startTime || '99:99'));
+      /* 朝→夜の時間順ソート（終日は先頭） */
+      dayEvents.sort((a, b) => {
+        if (!a.startTime) return -1;
+        if (!b.startTime) return 1;
+        return a.startTime.localeCompare(b.startTime);
+      });
+
       listContainer.innerHTML = '';
 
       dayEvents.forEach(e => {
         const cat = categories.find(c => c.name === e.category);
         const color = cat ? cat.color : '#000000';
         const icon = categoryIcons[e.category] || "📌";
+        const isHighPriority = e.priority === '高';
 
         const div = document.createElement('div');
-        div.className = `timeline-item ${e.completed ? 'completed' : ''}`;
-        div.style.borderLeftColor = color;
+        div.className = `timeline-item ${e.completed ? 'completed' : ''} ${isHighPriority ? 'priority-high' : ''}`;
+        div.style.borderLeftColor = isHighPriority ? '#e03131' : color;
 
         let timeBadgeHtml = `<div class="time-badge">終日</div>`;
         if (e.startTime) {
           timeBadgeHtml = `<div class="time-badge">${e.startTime}〜${e.endTime || ''}</div>`;
         }
 
+        let priorityBadgeHtml = isHighPriority ? `<span class="priority-badge">重要 🔥</span>` : '';
+
         div.innerHTML = `
           <div class="timeline-row">
             ${timeBadgeHtml}
             <div class="timeline-body">
-              <input type="checkbox" ${e.completed ? 'checked' : ''} onchange="toggleCompleteSchedule(${e.id})" style="width:18px; height:18px; cursor:pointer;">
-              <div class="timeline-title">${icon} ${escapeHtml(e.title)}</div>
+              <input type="checkbox" ${e.completed ? 'checked' : ''} onchange="toggleCompleteSchedule(${e.id})" style="width:20px; height:20px; cursor:pointer;">
+              <div class="timeline-title">${icon} ${escapeHtml(e.title)} ${priorityBadgeHtml}</div>
             </div>
             <div class="action-btns">
               <button class="edit-btn" onclick="openEditModal(${e.id})">編集</button>
               <button class="del-btn" onclick="deleteSchedule(${e.id})">削除</button>
             </div>
           </div>
-          <!-- その場で直接メモ入力・保存できるエリア -->
           <div class="direct-memo-box">
             <input type="text" id="directNoteInput-${e.id}" value="${escapeHtml(e.note || '')}" placeholder="💬 メモを入力・追記...">
             <button class="direct-memo-save-btn" onclick="saveDirectNote(${e.id})">保存</button>
@@ -783,7 +856,6 @@
       });
     }
 
-    /* 日別一覧から直接メモを即時保存する関数 */
     function saveDirectNote(id) {
       const input = document.getElementById(`directNoteInput-${id}`);
       if (!input) return;
@@ -798,6 +870,7 @@
       }
     }
 
+    /* 🚀 【改善機能①】爆速メモの高度解析ロジック（日付・時間・重要度・カテゴリの全自動推定） */
     function startConvertMemo(index) {
       convertingMemoIndex = index;
       const memoText = quickMemos[index];
@@ -807,14 +880,24 @@
       let startTime = "10:00";
       let endTime = "12:00";
       let selectedCat = "大学";
+      let priority = "中";
 
+      /* 日付解析: 明日 / 明後日 / 来週 / M月D日 */
+      const baseDate = new Date(2026, 9, 20); // 10/20を現在日として基準化
       if (memoText.includes('明日')) {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        targetDateStr = formatDateStr(tomorrow);
+        baseDate.setDate(baseDate.getDate() + 1);
+        targetDateStr = formatDateStr(baseDate);
         title = title.replace('明日', '');
+      } else if (memoText.includes('明後日')) {
+        baseDate.setDate(baseDate.getDate() + 2);
+        targetDateStr = formatDateStr(baseDate);
+        title = title.replace('明後日', '');
+      } else if (memoText.includes('来週')) {
+        baseDate.setDate(baseDate.getDate() + 7);
+        targetDateStr = formatDateStr(baseDate);
+        title = title.replace('来週', '');
       } else {
-        const monthDayMatch = memoText.match(/(\d{1,2})[\/\-](\d{1,2})/);
+        const monthDayMatch = memoText.match(/(\d{1,2})[\/\-月](\d{1,2})日?/);
         if (monthDayMatch) {
           const month = String(monthDayMatch[1]).padStart(2, '0');
           const day = String(monthDayMatch[2]).padStart(2, '0');
@@ -823,20 +906,28 @@
         }
       }
 
-      const timeMatch = memoText.match(/(\d{1,2})(?:時|:(\d{2}))/);
-      if (timeMatch) {
+      /* 時間解析: 例 17時 / 17:30 / 17時半 */
+      const timeMatch = memoText.match(/(\d{1,2})(?:時|:(\d{2}))?(半)?/);
+      if (timeMatch && (memoText.includes('時') || memoText.includes(':'))) {
         let hour = String(timeMatch[1]).padStart(2, '0');
-        let min = timeMatch[2] ? String(timeMatch[2]).padStart(2, '0') : '00';
+        let min = timeMatch[3] ? '30' : (timeMatch[2] ? String(timeMatch[2]).padStart(2, '0') : '00');
         startTime = `${hour}:${min}`;
         let endHour = String(Math.min(23, parseInt(hour) + 2)).padStart(2, '0');
         endTime = `${endHour}:${min}`;
         title = title.replace(timeMatch[0], '');
       }
 
-      if (memoText.includes('バイト')) selectedCat = "バイト";
-      else if (memoText.includes('テスト') || memoText.includes('課題') || memoText.includes('レポート')) selectedCat = "課題・テスト";
-      else if (memoText.includes('サークル') || memoText.includes('飲み')) selectedCat = "サークル";
-      else if (memoText.includes('カフェ') || memoText.includes('美容院') || memoText.includes('ライブ')) selectedCat = "プライベート";
+      /* カテゴリ＆重要度解析 */
+      if (memoText.includes('バイト') || memoText.includes('カフェ')) {
+        selectedCat = "バイト";
+      } else if (memoText.includes('テスト') || memoText.includes('課題') || memoText.includes('レポート') || memoText.includes('締切')) {
+        selectedCat = "課題・テスト";
+        priority = "高";
+      } else if (memoText.includes('サークル') || memoText.includes('飲み') || memoText.includes('イベント')) {
+        selectedCat = "サークル";
+      } else if (memoText.includes('美容院') || memoText.includes('ライブ') || memoText.includes('買い物')) {
+        selectedCat = "プライベート";
+      }
 
       openAddModal();
 
@@ -846,6 +937,7 @@
       document.getElementById('endTime').value = endTime;
       document.getElementById('scheduleNote').value = memoText;
       selectCategoryPill(selectedCat);
+      selectPriorityPill(priority);
     }
 
     function addQuickMemo() {
@@ -939,8 +1031,8 @@
               <div style="font-size:0.72rem; color:var(--text-sub);">${escapeHtml(p.title)} (${p.startTime}〜${p.endTime})</div>
             </div>
             <div>
-              <button onclick="editPattern(${idx})" style="background:white; color:#000000; border:1.5px solid #000000; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:800; margin-right:4px;">編集</button>
-              <button onclick="deletePattern(${idx})" style="background:#000000; color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:0.72rem; font-weight:800;">削除</button>
+              <button onclick="editPattern(${idx})" style="background:white; color:#000000; border:1.5px solid #000000; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:800; margin-right:4px;">編集</button>
+              <button onclick="deletePattern(${idx})" style="background:#000000; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:800;">削除</button>
             </div>
           </div>
         `;
@@ -1135,7 +1227,7 @@
         const isToday = dateStr === todayDateStr;
         const isSelected = dateStr === selectedDateStr;
 
-        const dayEvents = schedules.filter(s => s.date === dateStr && (activeFilter === 'all' || s.category === activeFilter));
+        const dayEvents = getFilteredSchedules(dateStr);
 
         let dotsHtml = '<div class="dots-container">';
         dayEvents.slice(0, 5).forEach(e => {
@@ -1147,7 +1239,7 @@
 
         html += `
           <div class="cell ${dayOfWeek === 6 ? 'is-sat' : ''} ${dayOfWeek === 0 ? 'is-sun' : ''} ${isHoliday ? 'is-holiday' : ''} ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" style="height:100px;" onclick="selectDate('${dateStr}')">
-            <div style="font-size:0.68rem; color:var(--text-sub); font-weight:800;">${['日','月','火','水','木','金','土'][dayOfWeek]}</div>
+            <div style="font-size:0.7rem; color:var(--text-sub); font-weight:800;">${['日','月','火','水','木','金','土'][dayOfWeek]}</div>
             <div class="day-num">${d.getDate()}</div>
             ${dotsHtml}
           </div>
@@ -1161,7 +1253,7 @@
       let html = `<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">`;
       for (let m = 0; m < 12; m++) {
         html += `
-          <div style="background: white; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 12px 6px; text-align: center; font-size: 0.88rem; cursor: pointer; font-weight: 800;" onclick="jumpToMonth(${m})">
+          <div style="background: white; border: 1.5px solid var(--border-color); border-radius: 10px; padding: 14px 6px; text-align: center; font-size: 0.9rem; cursor: pointer; font-weight: 800;" onclick="jumpToMonth(${m})">
             ${m + 1}月
           </div>
         `;
@@ -1199,7 +1291,7 @@
       }
 
       selectCategoryPill(item.category);
-      selectPriorityPill(item.priority);
+      selectPriorityPill(item.priority || '中');
 
       openAddModal();
     }
@@ -1243,8 +1335,8 @@
       categories.forEach((c, index) => {
         catList.innerHTML += `
           <div style="display:flex; justify-content:space-between; align-items:center; background:#fafafa; border:1.5px solid var(--border-color); padding:8px 12px; border-radius:8px;">
-            <div style="font-size:0.88rem; font-weight:800;"><span style="color:${c.color}; font-size:1.1rem;">●</span> <strong>${c.name}</strong></div>
-            <button onclick="deleteCategory(${index})" style="background:#000000; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.75rem; font-weight:800;">削除</button>
+            <div style="font-size:0.9rem; font-weight:800;"><span style="color:${c.color}; font-size:1.1rem;">●</span> <strong>${c.name}</strong></div>
+            <button onclick="deleteCategory(${index})" style="background:#000000; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:0.78rem; font-weight:800;">削除</button>
           </div>
         `;
       });
