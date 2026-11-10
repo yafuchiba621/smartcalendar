@@ -211,7 +211,7 @@
     .cell .day-num.sun, .cell .day-num.holiday { color: #000000; text-decoration: underline; }
     .cell .day-num.sat { color: #3f3f46; }
 
-    /* 🏷️ 【新開発】連泊用横帯バー表示 */
+    /* 🏷️ 連泊用横帯バー表示 */
     .event-bars-container {
       width: 100%;
       display: flex;
@@ -473,7 +473,7 @@
     </div>
     <div class="memo-body" id="memoBody">
       <div class="memo-input-box">
-        <input type="text" id="quickMemoInput" placeholder="例：来週 10/27〜10/29 お泊まり旅行 カフェバイト">
+        <input type="text" id="quickMemoInput" placeholder="例：来週お泊まり旅行 カフェバイト">
         <button class="memo-btn" onclick="addQuickMemo()">保存</button>
       </div>
       <div class="memo-list" id="quickMemoList"></div>
@@ -502,7 +502,7 @@
     <div class="cal-header">
       <button onclick="navigateView(-1)" class="filter-btn">◀</button>
       <div class="cal-header-center">
-        <span id="calTitle">2026年 10月</span>
+        <span id="calTitle"></span>
         <div class="digital-clock">
           <span id="digitalClockTime">00:00:00</span>
         </div>
@@ -693,10 +693,16 @@
       { name: "📝 レポート提出", title: "課題レポート作成", startTime: "10:00", endTime: "12:00", category: "課題・テスト", priority: "高" }
     ];
 
-    const todayDateStr = "2026-10-20"; 
+    // 🌟 今日の日付（YYYY-MM-DD）をリアルタイム取得する関数
+    function getTodayString() {
+      const now = new Date();
+      return formatDateStr(now);
+    }
+
+    let todayDateStr = getTodayString();
     let currentView = 'month';
-    let currentDate = new Date(2026, 9, 20);
-    let selectedDateStr = "2026-10-20";
+    let currentDate = new Date();
+    let selectedDateStr = getTodayString();
     let activeFilter = 'all';
     let searchQuery = '';
     let convertingMemoIndex = null;
@@ -708,6 +714,7 @@
     let quickMemos = JSON.parse(localStorage.getItem('studentQuickMemos')) || [];
 
     document.addEventListener("DOMContentLoaded", () => {
+      syncWithToday();
       renderCategories();
       updatePatternDropdown();
       updateView();
@@ -715,8 +722,24 @@
       startDigitalClock();
     });
 
+    // バックグラウンドから復帰時にも日付を再チェック
+    function syncWithToday() {
+      todayDateStr = getTodayString();
+      if (!selectedDateStr) {
+        selectedDateStr = todayDateStr;
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncWithToday();
+        updateView();
+      }
+    });
+
     function jumpToToday() {
-      currentDate = new Date(2026, 9, 20);
+      currentDate = new Date();
+      todayDateStr = getTodayString();
       selectedDateStr = todayDateStr;
       if (currentView === 'year') switchView('month');
       updateView();
@@ -783,7 +806,6 @@
       });
     }
 
-    /* 🏷️ 月グリッド描画（連泊＝横帯バー / 単発＝丸ドット に自動分岐） */
     function renderSingleMonthGrid(year, month) {
       const firstDay = new Date(year, month, 1).getDay();
       const lastDate = new Date(year, month + 1, 0).getDate();
@@ -808,11 +830,9 @@
         let numClass = isHoliday ? 'holiday' : (isSun ? 'sun' : (isSat ? 'sat' : ''));
         const dayEvents = getFilteredSchedules(dateStr);
 
-        /* 連泊（複数日）予定と単発（1日）予定を仕分け */
         const multiDayEvents = dayEvents.filter(e => (e.startDate || e.date) !== (e.endDate || e.startDate || e.date));
         const singleDayEvents = dayEvents.filter(e => (e.startDate || e.date) === (e.endDate || e.startDate || e.date));
 
-        /* 連泊用横帯バーの作成 */
         let barsHtml = '<div class="event-bars-container">';
         multiDayEvents.slice(0, 2).forEach(e => {
           const cat = categories.find(c => c.name === e.category);
@@ -820,13 +840,11 @@
           const startDate = e.startDate || e.date;
           const isStartDay = dateStr === startDate;
           
-          /* 初日のみタイトルを表示、2日目以降は帯のみ連結表示 */
           const displayTitle = isStartDay ? escapeHtml(e.title) : '────────';
           barsHtml += `<div class="multi-day-bar" style="background-color:${color};" title="${escapeHtml(e.title)}">${displayTitle}</div>`;
         });
         barsHtml += '</div>';
 
-        /* 単体予定ドットの作成 */
         let dotsHtml = '<div class="dots-container">';
         singleDayEvents.slice(0, 4).forEach(e => {
           const cat = categories.find(c => c.name === e.category);
@@ -954,13 +972,15 @@
 
       const rangeMatch = memoText.match(/(\d{1,2})[\/\-](\d{1,2})[〜～\-]+(\d{1,2})[\/\-](\d{1,2})/);
       if (rangeMatch) {
-        startStr = `2026-${String(rangeMatch[1]).padStart(2,'0')}-${String(rangeMatch[2]).padStart(2,'0')}`;
-        endStr = `2026-${String(rangeMatch[3]).padStart(2,'0')}-${String(rangeMatch[4]).padStart(2,'0')}`;
+        const curYear = new Date().getFullYear();
+        startStr = `${curYear}-${String(rangeMatch[1]).padStart(2,'0')}-${String(rangeMatch[2]).padStart(2,'0')}`;
+        endStr = `${curYear}-${String(rangeMatch[3]).padStart(2,'0')}-${String(rangeMatch[4]).padStart(2,'0')}`;
         title = title.replace(rangeMatch[0], '');
       } else {
         const singleMatch = memoText.match(/(\d{1,2})[\/\-月](\d{1,2})日?/);
         if (singleMatch) {
-          startStr = `2026-${String(singleMatch[1]).padStart(2,'0')}-${String(singleMatch[2]).padStart(2,'0')}`;
+          const curYear = new Date().getFullYear();
+          startStr = `${curYear}-${String(singleMatch[1]).padStart(2,'0')}-${String(singleMatch[2]).padStart(2,'0')}`;
           endStr = startStr;
           title = title.replace(singleMatch[0], '');
         }
@@ -1148,10 +1168,12 @@
 
       schedules = schedules.filter(s => !s.isSample);
       let idCounter = Date.now();
+      const baseYear = currentDate.getFullYear();
+      const baseMonth = currentDate.getMonth();
 
       for (let monthOffset = -2; monthOffset <= 4; monthOffset++) {
         for (let day = 1; day <= 28; day++) {
-          const dateObj = new Date(2026, 9 + monthOffset, day);
+          const dateObj = new Date(baseYear, baseMonth + monthOffset, day);
           const dayOfWeek = dateObj.getDay();
           const dateStr = formatDateStr(dateObj);
 
@@ -1167,9 +1189,13 @@
         }
       }
 
-      /* サンプルお泊まり（10/27〜10/29の3日間バー） */
+      const sampleStart = new Date(currentDate);
+      sampleStart.setDate(sampleStart.getDate() + 3);
+      const sampleEnd = new Date(sampleStart);
+      sampleEnd.setDate(sampleEnd.getDate() + 2);
+
       schedules.push({
-        id: idCounter++, title: "🏕 温泉お泊まり旅行", startDate: "2026-10-27", endDate: "2026-10-29", startTime: "", endTime: "", category: "プライベート", priority: "中", note: "15:00チェックイン", completed: false, isSample: true
+        id: idCounter++, title: "🏕 温泉お泊まり旅行", startDate: formatDateStr(sampleStart), endDate: formatDateStr(sampleEnd), startTime: "", endTime: "", category: "プライベート", priority: "中", note: "15:00チェックイン", completed: false, isSample: true
       });
 
       localStorage.setItem('studentSchedules', JSON.stringify(schedules));
