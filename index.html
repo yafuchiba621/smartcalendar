@@ -473,7 +473,7 @@
     </div>
     <div class="memo-body" id="memoBody">
       <div class="memo-input-box">
-        <input type="text" id="quickMemoInput" placeholder="例：来週お泊まり旅行 カフェバイト">
+        <input type="text" id="quickMemoInput" placeholder="例：11/20 18:00 カフェバイト">
         <button class="memo-btn" onclick="addQuickMemo()">保存</button>
       </div>
       <div class="memo-list" id="quickMemoList"></div>
@@ -958,53 +958,85 @@
       }
     }
 
+    // 🌟 日付と時間の両方を自動読み取りして反映する関数
     function startConvertMemo(index) {
       convertingMemoIndex = index;
       const memoText = quickMemos[index];
       
       let title = memoText;
-      let startStr = selectedDateStr;
-      let endStr = selectedDateStr;
+      let startStr = selectedDateStr || getTodayString();
+      let endStr = startStr;
       let startTime = "10:00";
       let endTime = "12:00";
       let selectedCat = "プライベート";
       let priority = "中";
 
-      const rangeMatch = memoText.match(/(\d{1,2})[\/\-](\d{1,2})[〜～\-]+(\d{1,2})[\/\-](\d{1,2})/);
-      if (rangeMatch) {
+      // 1. 期間の日付抽出（例: 11/20〜11/22, 11月20日-11月22日）
+      const rangeDateMatch = memoText.match(/(\d{1,2})[\/\-月](\d{1,2})日?[〜～\-]+(\d{1,2})[\/\-月](\d{1,2})日?/);
+      if (rangeDateMatch) {
         const curYear = new Date().getFullYear();
-        startStr = `${curYear}-${String(rangeMatch[1]).padStart(2,'0')}-${String(rangeMatch[2]).padStart(2,'0')}`;
-        endStr = `${curYear}-${String(rangeMatch[3]).padStart(2,'0')}-${String(rangeMatch[4]).padStart(2,'0')}`;
-        title = title.replace(rangeMatch[0], '');
+        startStr = `${curYear}-${String(rangeDateMatch[1]).padStart(2,'0')}-${String(rangeDateMatch[2]).padStart(2,'0')}`;
+        endStr = `${curYear}-${String(rangeDateMatch[3]).padStart(2,'0')}-${String(rangeDateMatch[4]).padStart(2,'0')}`;
+        title = title.replace(rangeDateMatch[0], '');
       } else {
-        const singleMatch = memoText.match(/(\d{1,2})[\/\-月](\d{1,2})日?/);
-        if (singleMatch) {
+        // 単日の日付抽出（例: 11/20, 11月20日, 11-20）
+        const singleDateMatch = memoText.match(/(\d{1,2})[\/\-月](\d{1,2})日?/);
+        if (singleDateMatch) {
           const curYear = new Date().getFullYear();
-          startStr = `${curYear}-${String(singleMatch[1]).padStart(2,'0')}-${String(singleMatch[2]).padStart(2,'0')}`;
+          startStr = `${curYear}-${String(singleDateMatch[1]).padStart(2,'0')}-${String(singleDateMatch[2]).padStart(2,'0')}`;
           endStr = startStr;
-          title = title.replace(singleMatch[0], '');
+          title = title.replace(singleDateMatch[0], '');
         }
       }
 
+      // 2. 範囲時間の抽出（例: 17:00〜21:00, 17:00-21:00）
+      const rangeTimeMatch = title.match(/(\d{1,2}):(\d{2})[〜～\-]+(\d{1,2}):(\d{2})/);
+      if (rangeTimeMatch) {
+        startTime = `${String(rangeTimeMatch[1]).padStart(2, '0')}:${rangeTimeMatch[2]}`;
+        endTime = `${String(rangeTimeMatch[3]).padStart(2, '0')}:${rangeTimeMatch[4]}`;
+        title = title.replace(rangeTimeMatch[0], '');
+      } else {
+        // 単一時間の抽出（例: 18:00）→ 終了時間は自動で2時間後に設定
+        const singleTimeMatch = title.match(/(\d{1,2}):(\d{2})/);
+        if (singleTimeMatch) {
+          startTime = `${String(singleTimeMatch[1]).padStart(2, '0')}:${singleTimeMatch[2]}`;
+          const endHour = (parseInt(singleTimeMatch[1], 10) + 2) % 24;
+          endTime = `${String(endHour).padStart(2, '0')}:${singleTimeMatch[2]}`;
+          title = title.replace(singleTimeMatch[0], '');
+        }
+      }
+
+      // 3. キーワードからジャンルと重要度を自動判定
       if (memoText.includes('お泊まり') || memoText.includes('旅行') || memoText.includes('合宿')) {
         selectedCat = "プライベート";
       } else if (memoText.includes('バイト')) {
         selectedCat = "バイト";
-      } else if (memoText.includes('テスト') || memoText.includes('課題')) {
+      } else if (memoText.includes('テスト') || memoText.includes('課題') || memoText.includes('レポート')) {
         selectedCat = "課題・テスト";
         priority = "高";
+      } else if (memoText.includes('大学') || memoText.includes('講義') || memoText.includes('ゼミ')) {
+        selectedCat = "大学";
+      } else if (memoText.includes('サークル')) {
+        selectedCat = "サークル";
       }
+
+      // 4. 状態をセットしてモーダルを開く
+      document.getElementById('editScheduleId').value = '';
+      selectedCategory = selectedCat;
+      selectedPriority = priority;
+      renderCategories();
+      selectPriorityPill(priority);
 
       openAddModal();
 
+      document.getElementById('isAllDay').checked = false;
+      toggleTimeInput();
       document.getElementById('title').value = title.replace(/[〜～\s]+/g, ' ').trim() || memoText;
       document.getElementById('startDate').value = startStr;
       document.getElementById('endDate').value = endStr;
       document.getElementById('startTime').value = startTime;
       document.getElementById('endTime').value = endTime;
       document.getElementById('scheduleNote').value = memoText;
-      selectCategoryPill(selectedCat);
-      selectPriorityPill(priority);
     }
 
     function addQuickMemo() {
@@ -1526,8 +1558,16 @@
 
       localStorage.setItem('studentSchedules', JSON.stringify(schedules));
       closeModal('addModal');
+
+      // 追加した予定の日付にカレンダーを自動移動＆選択して表示
+      if (startDate) {
+        const parts = startDate.split('-');
+        currentDate = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        selectedDateStr = startDate;
+      }
+
       updateView();
-      renderDaySchedules();
+      selectDate(selectedDateStr);
     });
 
     function formatDateStr(date) {
